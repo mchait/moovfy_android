@@ -29,6 +29,7 @@ import com.android.volley.RequestQueue;
 import com.android.volley.Response;
 import com.android.volley.VolleyError;
 import com.android.volley.toolbox.JsonObjectRequest;
+import com.android.volley.toolbox.Volley;
 import com.google.android.gms.location.DetectedActivity;
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.Task;
@@ -86,6 +87,12 @@ public class MainActivity extends AppCompatActivity
             startActivity(login);
         }
 
+        if (!SmartLocation.with(getApplicationContext()).location().state().isGpsAvailable()) {
+            Toast.makeText(MainActivity.this, "Por favor active el GPS del teléfono!", Toast.LENGTH_SHORT).show();
+        }
+
+        SmartLocation.with(getApplicationContext()).location().start(locationListener);
+        queue = Volley.newRequestQueue(this);
 
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
@@ -111,33 +118,6 @@ public class MainActivity extends AppCompatActivity
         }
         navigationView.setNavigationItemSelectedListener(this);
 
-        //Pasar datos de localización en formato JSON a la API
-       SmartLocation.with(getApplicationContext()).location().start(new OnLocationUpdatedListener() {
-            @Override
-            public void onLocationUpdated(Location location) {
-                FirebaseUser user = mAuth.getCurrentUser();
-                String userUid = user.getUid();
-                System.out.println("Hola localizar");
-                JSONObject json = new JSONObject();
-
-                try {
-                    json.put("userUID", userUid);
-                } catch (JSONException e) {
-                    e.printStackTrace();
-                }
-                try {
-                    json.put("latitude", location.getLatitude());
-                } catch (JSONException e) {
-                    e.printStackTrace();
-                }
-                try {
-                    json.put("longitude", location.getLongitude());
-                } catch (JSONException e) {
-                    e.printStackTrace();
-                }
-               pasar_datos(json);
-            }
-        });
 
         //----------------------------- TABS
         tabLayout = findViewById(R.id.tablayout);
@@ -241,6 +221,8 @@ public class MainActivity extends AppCompatActivity
             // Handle the camera action
         } else if (id == R.id.nav_edit_profile) {
 
+           Intent intent = new Intent(this, EditProfile.class);
+           startActivity(intent);
         } else if (id == R.id.nav_invite) {
 
         } else if (id == R.id.nav_help) {
@@ -261,4 +243,43 @@ public class MainActivity extends AppCompatActivity
         drawer.closeDrawer(GravityCompat.START);
         return true;
     }
+    //LOCATION FUNCTIONS
+    OnLocationUpdatedListener locationListener = new OnLocationUpdatedListener() {
+        @Override
+        public void onLocationUpdated(Location location) {
+            double lat = location.getLatitude();
+            double lng = location.getLongitude();
+            System.out.println("LOCATION CHANGED: latitude " + lat + " longitude " + lng);
+
+            String firebase_uid = getSharedPreferences("PREFERENCE", MODE_PRIVATE).getString("user_uid","");
+            if(firebase_uid != "") {
+                FirebaseUser user = mAuth.getCurrentUser();
+                String userUid = user.getUid();
+                JSONObject json = new JSONObject();
+                try {
+                    json.put("userUID", userUid);
+                } catch (JSONException e) {
+                    e.printStackTrace();
+                }
+                try {
+                    json.put("latitude", location.getLatitude());
+                } catch (JSONException e) {
+                    e.printStackTrace();
+                }
+                try {
+                    json.put("longitude", location.getLongitude());
+                } catch (JSONException e) {
+                    e.printStackTrace();
+                }
+                pasar_datos(json);
+            }
+        }
+    };
+
+    Runnable locationRunnable = new Runnable(){
+        @Override
+        public void run() {
+            SmartLocation.with(getApplicationContext()).location().start(locationListener);
+        }
+    };
 }
