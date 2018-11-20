@@ -60,7 +60,7 @@ public class MainActivity extends AppCompatActivity
     private FirebaseAuth mAuth;
     private RequestQueue queue;
     private LocationGooglePlayServicesProvider provider;
-    private final int REQUEST_PERMISSION_PHONE_STATE=1;
+    private final int REQUEST_PERMISSION_PHONE_STATE = 1;
 
     /*
      * Tabs
@@ -80,10 +80,10 @@ public class MainActivity extends AppCompatActivity
 
 
         FirebaseUser currentUser = mAuth.getCurrentUser();
-        String firebase_uid = getSharedPreferences("PREFERENCE", MODE_PRIVATE).getString("user_uid","");
+        String firebase_uid = getSharedPreferences("PREFERENCE", MODE_PRIVATE).getString("user_uid", "");
 
         if (firebase_uid.equals("")) { // || currentUser == null
-            Intent login = new Intent(getApplicationContext(),LoginActivity.class);
+            Intent login = new Intent(getApplicationContext(), LoginActivity.class);
             startActivity(login);
         }
 
@@ -91,8 +91,6 @@ public class MainActivity extends AppCompatActivity
             Toast.makeText(MainActivity.this, "Por favor active el GPS del teléfono!", Toast.LENGTH_SHORT).show();
         }
 
-        SmartLocation.with(getApplicationContext()).location().start(locationListener);
-        queue = Volley.newRequestQueue(this);
 
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
@@ -157,7 +155,7 @@ public class MainActivity extends AppCompatActivity
     private void pasar_datos(JSONObject json) {
         String url = "http://10.4.41.143:3000/locations/addLocation";
 
-        JsonObjectRequest jsonobj = new JsonObjectRequest(Request.Method.PUT, url,json,
+        JsonObjectRequest jsonobj = new JsonObjectRequest(Request.Method.PUT, url, json,
                 new Response.Listener<JSONObject>() {
                     @Override
                     public void onResponse(JSONObject response) {
@@ -214,72 +212,33 @@ public class MainActivity extends AppCompatActivity
         // Handle navigation view item clicks here.
         int id = item.getItemId();
 
-       if (id == R.id.nav_chat) {
+        if (id == R.id.nav_chat) {
 
-           Intent intent = new Intent(this, ChatsActivity.class);
-           startActivity(intent);
+            Intent intent = new Intent(this, ChatsActivity.class);
+            startActivity(intent);
             // Handle the camera action
         } else if (id == R.id.nav_edit_profile) {
 
-           Intent intent = new Intent(this, EditProfile.class);
-           startActivity(intent);
+            Intent intent = new Intent(this, EditProfile.class);
+            startActivity(intent);
         } else if (id == R.id.nav_invite) {
 
         } else if (id == R.id.nav_help) {
 
-           Intent intent = new Intent(this, HelpActivity.class);
-           startActivity(intent);
+            Intent intent = new Intent(this, HelpActivity.class);
+            startActivity(intent);
 
         } else if (id == R.id.nav_settings) {
 
         } else if (id == R.id.nav_logout) {
-           FirebaseAuth.getInstance().signOut();
-           getSharedPreferences("PREFERENCE",MODE_PRIVATE).edit().putString("user_uid","").commit();
-           Intent login = new Intent(getApplicationContext(),LoginActivity.class);
-           startActivity(login);
+            FirebaseAuth.getInstance().signOut();
+            getSharedPreferences("PREFERENCE", MODE_PRIVATE).edit().putString("user_uid", "").commit();
+            Intent login = new Intent(getApplicationContext(), LoginActivity.class);
+            startActivity(login);
         }
 
         DrawerLayout drawer = (DrawerLayout) findViewById(R.id.drawer_layout);
         drawer.closeDrawer(GravityCompat.START);
         return true;
     }
-    //LOCATION FUNCTIONS
-    OnLocationUpdatedListener locationListener = new OnLocationUpdatedListener() {
-        @Override
-        public void onLocationUpdated(Location location) {
-            double lat = location.getLatitude();
-            double lng = location.getLongitude();
-            System.out.println("LOCATION CHANGED: latitude " + lat + " longitude " + lng);
-
-            String firebase_uid = getSharedPreferences("PREFERENCE", MODE_PRIVATE).getString("user_uid","");
-            if(firebase_uid != "") {
-                FirebaseUser user = mAuth.getCurrentUser();
-                String userUid = user.getUid();
-                JSONObject json = new JSONObject();
-                try {
-                    json.put("userUID", userUid);
-                } catch (JSONException e) {
-                    e.printStackTrace();
-                }
-                try {
-                    json.put("latitude", location.getLatitude());
-                } catch (JSONException e) {
-                    e.printStackTrace();
-                }
-                try {
-                    json.put("longitude", location.getLongitude());
-                } catch (JSONException e) {
-                    e.printStackTrace();
-                }
-                pasar_datos(json);
-            }
-        }
-    };
-
-    Runnable locationRunnable = new Runnable(){
-        @Override
-        public void run() {
-            SmartLocation.with(getApplicationContext()).location().start(locationListener);
-        }
-    };
 }
