@@ -60,6 +60,9 @@
         <activity
             android:name=".EditProfile"
             android:parentActivityName=".MainActivity" />
+        <activity
+            android:name=".MoovfyIntro"
+            android:theme="@style/Theme.Intro" />
     </application>
 
 </manifest>
