@@ -228,8 +228,6 @@ public class MainActivity extends AppCompatActivity
             Intent intent = new Intent(this, HelpActivity.class);
             startActivity(intent);
 
-        } else if (id == R.id.nav_settings) {
-
         } else if (id == R.id.nav_logout) {
             FirebaseAuth.getInstance().signOut();
             getSharedPreferences("PREFERENCE", MODE_PRIVATE).edit().putString("user_uid", "").commit();
